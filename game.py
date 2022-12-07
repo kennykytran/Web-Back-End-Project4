@@ -3,7 +3,11 @@ import sqlite3
 import uuid
 import databases
 import toml
+import json
 import itertools
+import requests
+import httpx
+import os
 from quart import Quart, abort, g, request
 from quart_schema import QuartSchema, validate_request
 
@@ -68,6 +72,8 @@ async def create_game():
         )
 
         # Check if the retrived word is a repeat for the user, and if so grab a new word
+        print(auth.username)
+        print(word)
         while await db.fetch_one(
             "SELECT answerid FROM games WHERE username = :username AND answerid = :answerid",
             values={"username": auth.username, "answerid": word[0]},
@@ -133,6 +139,14 @@ async def add_guess(data):
             except sqlite3.IntegrityError as e:
                 abort(404, e)
 
+            webhook_url = 'http://127.0.0.1:5100/payload'
+            numguesses = await db.fetch_one(
+                "SELECT guesses FROM game WHERE gameid = :gameid",
+                values={"gameid":currGame["gameid"]}
+            )
+            # print(numguesses[0])20:35:09 primary.1     | HOopla
+
+            print("HOla")
             return {
                 "guessedWord": currGame["word"],
                 "Accuracy": "\u2713" * 5,
@@ -276,6 +290,37 @@ async def my_game():
             {"WWW-Authenticate": 'Basic realm = "Login required"'},
         )
 
+@app.route("/seturl", methods=["POST"])
+async def set_url():
+    auth = request.authorization
+    db_primary = await _get_db_primary()
+    prevuser = await db_primary.fetch_one(
+        "SELECT username FROM callbackurls where username = :username",
+        values={"username":auth.username},
+    )
+    if prevuser is not None:
+        return "", 409
+
+    return "", 200
+
+
+@app.route("/test", methods=["POST"])
+async def testing():
+    envar = os.environ
+    print(envar['HOSTNAME'])
+    webhook_url = 'http://127.0.0.1:5500/payload'
+    data = {'guesses':1}
+    r = httpx.post(webhook_url,data=json.dumps(data), headers={'Content-Type': 'application/json'})
+    return "",204
+
+@app.route("/payload", methods=["POST"])
+async def check_gamescore():
+    print("HELLO")
+    push = await request.get_json()
+    app.logger.debug(json.dumps(push, indent=1))
+    print("GOODBYE")
+    print(push)
+    return "",204
 
 @app.errorhandler(409)
 def conflict(e):
