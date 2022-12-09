@@ -38,4 +38,5 @@ CREATE TABLE callbackurls(
     username TEXT Primary Key,
     url STRING
 );
+
 COMMIT;
