@@ -12,9 +12,23 @@ from quart_schema import QuartSchema, RequestSchemaValidationError, validate_req
 
 app = Quart(__name__)
 QuartSchema(app)
+envar = os.environ
+res = None
+while res is None:
+    try:
+        # leaderboardURL = socket.getfqdn(envar['HOSTNAME']+":5400")
+        # res = httpx.get("http://"+leaderboardURL)
+        res = httpx.get("http://"+socket.getfqdn(envar['HOSTNAME']+":5400"))
+    except httpx.RequestError:
+        # might need to add a counter here
+        sleep(5)
+        time = time+5
+        print("Game API pending, the time is "+time+" seconds.")
+
 
 
 redis_client = redis.Redis(host='localhost', port=6379, db=0, charset='utf-8', decode_responses=True)
+
 # leaderboardURL = 'http://127.0.0.1:5400/allgames'
 # r = httpx.get(leaderboardURL,auth=("john","password"),timeout=2.0)
 
