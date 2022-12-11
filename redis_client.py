@@ -5,6 +5,7 @@ import redis
 import httpx
 import os
 import socket
+import sleep
 
 from quart import Quart, request, abort, g
 from quart_schema import QuartSchema, RequestSchemaValidationError, validate_request
@@ -18,6 +19,8 @@ while res is None:
     try:
         # leaderboardURL = socket.getfqdn(envar['HOSTNAME']+":5400")
         # res = httpx.get("http://"+leaderboardURL)
+        # might not need the envar['HOSTNAME'] section of this line
+        # 127.0.0.1 might suffice
         res = httpx.get("http://"+socket.getfqdn(envar['HOSTNAME']+":5400"))
     except httpx.RequestError:
         # might need to add a counter here
