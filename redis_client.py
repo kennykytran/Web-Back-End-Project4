@@ -15,17 +15,16 @@ QuartSchema(app)
 res = None
 seconds = 0
 while res is None:
-    print("Hello")
     try:
-        leaderboardURL = "http://"+socket.getfqdn("127.0.0.1:5400")
-        res = httpx.get("http://"+socket.getfqdn("127.0.0.1:5100/payload"))
+        # leaderboardURL = "http://"+socket.getfqdn("127.0.0.1:5400")
+        res = httpx.post("http://"+socket.getfqdn("127.0.0.1:5100/test"))
         print("The httpx.get method just happened")
         print(res)
     except httpx.RequestError:
         # might need to add a counter here
         sleep(5)
-        seconds = seconds + 5
-        print("Game API pending, the time is "+str(seconds)+" seconds.")
+        # seconds = seconds + 5
+        # print("Game API pending, the time is "+str(seconds)+" seconds.")
 
 
 
