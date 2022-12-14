@@ -35,7 +35,6 @@ CREATE TABLE valid_word(
 );
 
 CREATE TABLE callbackurls(
-    username TEXT Primary Key,
     url STRING
 );
 

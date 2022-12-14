@@ -5,28 +5,27 @@ import redis
 import httpx
 import os
 import socket
-import sleep
-
+from time import sleep
 from quart import Quart, request, abort, g
 from quart_schema import QuartSchema, RequestSchemaValidationError, validate_request
 
 
 app = Quart(__name__)
 QuartSchema(app)
-envar = os.environ
 res = None
+seconds = 0
 while res is None:
+    print("Hello")
     try:
-        # leaderboardURL = socket.getfqdn(envar['HOSTNAME']+":5400")
-        # res = httpx.get("http://"+leaderboardURL)
-        # might not need the envar['HOSTNAME'] section of this line
-        # 127.0.0.1 might suffice
-        res = httpx.get("http://"+socket.getfqdn(envar['HOSTNAME']+":5400"))
+        leaderboardURL = "http://"+socket.getfqdn("127.0.0.1:5400")
+        res = httpx.get("http://"+socket.getfqdn("127.0.0.1:5100/payload"))
+        print("The httpx.get method just happened")
+        print(res)
     except httpx.RequestError:
         # might need to add a counter here
         sleep(5)
-        time = time+5
-        print("Game API pending, the time is "+time+" seconds.")
+        seconds = seconds + 5
+        print("Game API pending, the time is "+str(seconds)+" seconds.")
 
 
 
@@ -106,14 +105,3 @@ async def scores():
 
     else:
         return {"Error": "No data"}, 404
-
-# @app.before_serving
-# async def activate_job():
-#     print("Hello")
-@app.while_serving
-async def runjob():
-    print("hello")
-
-if __name__ == "__main__":
-    # print("hello")
-    runjob()

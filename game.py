@@ -298,29 +298,29 @@ async def my_game():
             {"WWW-Authenticate": 'Basic realm = "Login required"'},
         )
 
-@app.route("/seturl", methods=["POST"])
-async def set_url():
-    auth = request.authorization
-    db_primary = await _get_db_primary()
-    prevuser = await db_primary.fetch_one(
-        "SELECT username FROM callbackurls where username = :username",
-        values={"username":auth.username},
-    )
-    if prevuser is not None:
-        return "", 409
-
-    return "", 200
-
-
-@app.route("/test", methods=["POST"])
-async def testing():
-    envar = os.environ
-    print(envar['HOSTNAME'])
-    webhook_url = 'http://127.0.0.1:5500/payload'
-    data = {'guesses':1}
-    r = httpx.post(webhook_url,data=json.dumps(data), headers={'Content-Type': 'application/json'})
-    return "",204
-
+# @app.route("/seturl", methods=["POST"])
+# async def set_url():
+#     auth = request.authorization
+#     db_primary = await _get_db_primary()
+#     prevuser = await db_primary.fetch_one(
+#         "SELECT username FROM callbackurls where username = :username",
+#         values={"username":auth.username},
+#     )
+#     if prevuser is not None:
+#         return "", 409
+#
+#     return "", 200
+#
+#
+# @app.route("/test", methods=["POST"])
+# async def testing():
+#     envar = os.environ
+#     print(envar['HOSTNAME'])
+#     webhook_url = 'http://127.0.0.1:5500/payload'
+#     data = {'guesses':1}
+#     r = httpx.post(webhook_url,data=json.dumps(data), headers={'Content-Type': 'application/json'})
+#     return "",204
+#
 @app.route("/payload", methods=["POST"])
 async def check_gamescore():
     print("HELLO")
@@ -329,73 +329,45 @@ async def check_gamescore():
     print("GOODBYE")
     print(push)
     return "",204
+#
+# @app.route("/subscribe", methods=["POST"])
+# @validate_request(Url)
+# async def register(data):
+#     print("Whats up gamers")
+#     # auth = request.authorization
+#     db = await _get_db_primary()
+#     url = dataclasses.asdict(data)
+#     print(url.get('url'))
+#     # username = auth.username
+#     await db.execute("INSERT INTO callbackurls(username, url) VALUES(:username, :url)", values={"username":auth.username,"url":url.get('url')})
+#     checkdb = await db.fetch_one(
+#         "SELECT username FROM callbackurls where username = :username",
+#         values={"username":username},
+#     )
+#     envar = os.environ
+#     print(envar['HOSTNAME'])
+#     fqdn = socket.getfqdn(envar['HOSTNAME'])
+#     print(fqdn)
+#     leaderboardURL = 'http://'+fqdn+':5400/results'
+#     print(leaderboardURL)
+#
+#     return "",200
 
-@app.route("/subscribe", methods=["POST"])
-@validate_request(Url)
-async def register(data):
-    auth = request.authorization
-    db = await _get_db_primary()
-    url = dataclasses.asdict(data)
-    print(url.get('url'))
-    username = auth.username
-    await db.execute("INSERT INTO callbackurls(username, url) VALUES(:username, :url)", values={"username":auth.username,"url":url.get('url')})
-    # checkdb = await db.fetch_one(
-    #     "SELECT username FROM callbackurls where username = :username",
-    #     values={"username":username},
-    # )
-    # envar = os.environ
-    # print(envar['HOSTNAME'])
-    # fqdn = socket.getfqdn(envar['HOSTNAME'])
-    # print(fqdn)
-    # leaderboardURL = 'http://'+fqdn+':5400/results'
-    # print(leaderboardURL)
+# # @app.route("/connleaderboard", methods=["POST"])
+# # async def connlb():
+# #     db = await _get_db_primary()
+# #     leaderboardURL = 'http://127.0.0.1:5400/results'
+# #     username = "Franklin"
+# #     await db.execute("INSERT INTO callbackurls(username, url) VALUES(:username, :url)", values={"username":username,"url":leaderboardURL})
+# #     checkdb = await db.fetch_one(
+# #         "SELECT username FROM callbackurls where username = :username",
+# #         values={"username":username},
+# #     )
+# #     print(checkdb[0])
+#
+#     return "",200
+#
 
-    return "",200
-
-@app.route("/connleaderboard", methods=["POST"])
-async def connlb():
-    db = await _get_db_primary()
-    leaderboardURL = 'http://127.0.0.1:5400/results'
-    username = "Franklin"
-    await db.execute("INSERT INTO callbackurls(username, url) VALUES(:username, :url)", values={"username":username,"url":leaderboardURL})
-    checkdb = await db.fetch_one(
-        "SELECT username FROM callbackurls where username = :username",
-        values={"username":username},
-    )
-    print(checkdb[0])
-
-    return "",200
-
-@app.route("/<string:username>", methods=["GET"])
-async def gamescore(username):
-    environ = os.environ
-    r = redis.Redis(db=2, charset="utf-8", decode_responses=True)
-    find_user = r.mget(environ['HOSTNAME']+":5400/"+username)
-    if find_user:
-        return {username+"'s score: ": find_user[0]}, 200
-    return "",400
-
-@app.route("/deliver", methods=["POST"])
-@validate_request(Information)
-async def deliver_information():
-    environ = os.environ
-    r = redis.Redis(db=1, charset="utf-8", decode_responses=True)#score
-    s = redis.Redis(db=2, charset="utf-8", decode_responses=True)#url
-    user = dataclasses.asdict(data)
-    callbackURL = environ['HOSTNAME']+":5400/"+str(user)
-    findURL = s.mget(callbackURL)
-    if findURL:
-        return {"Error " : "In URL already"+callbackURL}
-    findURL = r.zrange("users", 0, -1, withscores=True)
-    for i in range(len(find_user)):
-        if find_user[i][0] == user:
-            try:
-                s.mset({callbackURL : str(find_user[i][1])})
-                return "",200
-            except:
-                return "",400
-    s.mset({callbackURL : 0})
-    return { user : "added in "+callbackURL},200
 
 
 
